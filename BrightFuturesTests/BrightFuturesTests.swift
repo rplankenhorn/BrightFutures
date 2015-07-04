@@ -797,16 +797,15 @@ extension BrightFuturesTests {
     }
     
     func testUtilsSequenceEmpty() {
-        XCTFail("does not compile")
-//        let e = self.expectation()
-//        
-//        sequence([Future<Int, NoError>]()).onSuccess { val in
-//            XCTAssertEqual(val.count, 0)
-//            
-//            e.fulfill()
-//        }
-//        
-//        self.waitForExpectationsWithTimeout(2, handler: nil)
+        let e = self.expectation()
+        
+        [Future<Int, NoError>]().sequence().onSuccess { val in
+            XCTAssertEqual(val.count, 0)
+            
+            e.fulfill()
+        }
+        
+        self.waitForExpectationsWithTimeout(2, handler: nil)
     }
     
     func testUtilsFindSuccess() {
