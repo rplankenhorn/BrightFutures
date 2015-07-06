@@ -58,7 +58,7 @@ public class InvalidationToken : ManualInvalidationTokenType {
 public extension DeferredType {
     
     public func onComplete(context c: ExecutionContext = defaultContext(), token: InvalidationToken, callback: Res -> ()) -> Self {
-        onComplete(context: c) { res in
+        onComplete(c) { res in
             token.context {
                 if !token.isInvalid {
                     callback(res)

@@ -17,7 +17,7 @@ public protocol DeferredType {
     init(result: Res)
     init<D: DeferredType where D.Res == Res>(other: D)
     
-    func onComplete(context c: ExecutionContext, callback: Res -> ()) -> Self
+    func onComplete(context: ExecutionContext, callback: Res -> ()) -> Self
 }
 
 internal protocol MutableDeferredType: DeferredType {
@@ -35,25 +35,29 @@ internal extension MutableDeferredType {
     }
     
     func completeWith<D: DeferredType where D.Res == Res>(other: D) {
-        other.onComplete(context: ImmediateExecutionContext, callback: { try! self.complete($0) })
+        other.onComplete(ImmediateExecutionContext, callback: { try! self.complete($0) })
     }
 }
 
 public extension DeferredType {
     
     func flatMap<D: DeferredType, U where D.Res == U>(f: Res -> D) -> D {
-        return map(f).flatten()
+        return flatMap(defaultContext(), f: f)
+    }
+    
+    func flatMap<D: DeferredType, U where D.Res == U>(context: ExecutionContext, f: Res -> D) -> D {
+        return map(context, transform: f).flatten()
     }
     
     /// Shorthand for map(context:transform:), needed to be able to do d.map(func)
     func map<U>(transform: Res -> U) -> Deferred<U> {
-        return map(context: defaultContext(), transform: transform)
+        return map(defaultContext(), transform: transform)
     }
     
-    func map<U>(context c: ExecutionContext, transform: Res -> U) -> Deferred<U> {
+    func map<U>(context: ExecutionContext, transform: Res -> U) -> Deferred<U> {
         let d = Deferred<U>()
         
-        onComplete(context: c) { res in
+        onComplete(context) { res in
             try! d.complete(transform(res))
         }
         
@@ -81,7 +85,7 @@ public extension DeferredType {
     }
     
     public func forceType<U>() -> Deferred<U> {
-        return map(context: ImmediateExecutionContext) {
+        return map(ImmediateExecutionContext) {
             $0 as! U
         }
     }
@@ -105,7 +109,7 @@ public extension DeferredType {
             let sema = Semaphore(value: 0)
             var res: Res? = nil
 
-            self.onComplete(context: Queue.global.context) {
+            self.onComplete(Queue.global.context) {
                 res = $0
                 sema.signal()
             }
@@ -119,7 +123,7 @@ public extension DeferredType {
     public func andThen(context c: ExecutionContext = defaultContext(), callback: Res -> ()) -> Self {
         let d = Deferred<Res>()
         
-        onComplete(context: c) { res in
+        onComplete(c) { res in
             callback(res)
             try! d.complete(res)
         }
@@ -143,7 +147,7 @@ extension DeferredType where Res: DeferredType {
     func flatten() -> Res {
         let signal = Deferred<Res>()
         
-        onComplete(context: ImmediateExecutionContext) { innerDeferred in
+        onComplete(ImmediateExecutionContext) { innerDeferred in
             signal.completeWith(innerDeferred)
         }
         
@@ -204,10 +208,10 @@ public class Deferred<R>: DeferredType {
         return self.result != nil
     }
     
-    public func onComplete(context c: ExecutionContext = defaultContext(), callback: Res -> ()) -> Self {
+    public func onComplete(context: ExecutionContext = defaultContext(), callback: Res -> ()) -> Self {
         let wrappedCallback : Deferred<R> -> () = { future in
             if let realRes = self.result {
-                c {
+                context {
                     self.callbackExecutionSemaphore.execute {
                         callback(realRes)
                         return

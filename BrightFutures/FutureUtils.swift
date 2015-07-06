@@ -29,28 +29,28 @@ public extension SequenceType where Generator.Element: DeferredType {
         let signal = Deferred<Generator.Element.Res>()
         
         for d in self {
-            d.onComplete(context: ImmediateExecutionContext) { res in
+            d.onComplete(ImmediateExecutionContext) { res in
                 signal.tryComplete(res)
             }
         }
         
         return Generator.Element(other: signal)
     }
-
+    
     public func reduce<R>(initial: R, context c: ExecutionContext = defaultContext(), combine: (R, Generator.Element.Res) -> R) -> Deferred<R> {
-        return self.reduce(Deferred(result: initial)) { acc, elem in
+        return reduce(Deferred(result: initial)) { acc, elem in
             acc.flatMap { zeroVal in
-                elem.map(context: c) { futVal in
+                elem.map(c) { futVal in
                     return combine(zeroVal, futVal)
                 }
             }
         }
     }
-
+    
     public func sequence() -> Deferred<[Generator.Element.Res]> {
         fatalError("not yet implemented")
     }
-
+    
     public func find(context c: ExecutionContext = defaultContext(), test: Generator.Element.Res -> Bool) -> Deferred<Result<Generator.Element.Res, BrightFuturesError<NoError>>> {
         return reduce(Result<Generator.Element.Res, BrightFuturesError<NoError>>(error: BrightFuturesError<NoError>.NoSuchElement), context: c) { acc, elem in
             
@@ -62,19 +62,21 @@ public extension SequenceType where Generator.Element: DeferredType {
         }
     }
     
-
-
+    
+    
 }
 
 public extension SequenceType {
-    public func traverse<U, D: DeferredType where D.Res == U>(f: Generator.Element -> D) -> Deferred<[U]> {
-        return map(f).reduce([U](), context: Queue.global.context) { (accum, elem) in
+    public func traverse<U, D: DeferredType where D.Res == U>(context context: ExecutionContext = ImmediateExecutionContext, f: Generator.Element -> D) -> Deferred<[U]> {
+        return map(Deferred.init).map { elem -> D in
+            return elem.flatMap(context, f: f)
+        }.reduce([U](), context: ImmediateExecutionContext) { (accum, elem) in
             return accum + [elem]
         }
     }
     
-    public func traverse<D: DeferredType where D.Res: ResultType>(f: Generator.Element -> D) -> Deferred<Result<[D.Res.Value],D.Res.Error>> {
-        return traverse(f).sequence()
+    public func traverse<D: DeferredType where D.Res: ResultType>(context context: ExecutionContext = ImmediateExecutionContext, f: Generator.Element -> D) -> Deferred<Result<[D.Res.Value],D.Res.Error>> {
+        return traverse(context: context, f: f).sequence()
     }
 }
 
@@ -102,7 +104,7 @@ public extension SequenceType where Generator.Element: DeferredType, Generator.E
             
             return acc
         }
-    
+        
     }
     
     public func sequence() -> Deferred<Result<[Generator.Element.Res.Value], Generator.Element.Res.Error>> {
@@ -119,8 +121,8 @@ public extension SequenceType where Generator.Element: ResultType {
         return reduce(Result(value: [])) { (res, elem) -> Result<[Generator.Element.Value], Generator.Element.Error> in
             return res.analysis(ifSuccess: { val in
                 elem.analysis(ifSuccess: { Result(value:val+[$0]) }, ifFailure: { Result(error:$0) })
-            }, ifFailure: { err in
-                res
+                }, ifFailure: { err in
+                    res
             })
         }
     }
@@ -131,8 +133,8 @@ public extension SequenceType where Generator.Element: ResultType {
 //    /// Turns a sequence of T's into an array of `Future<U>`'s by calling the given closure for each element in the sequence.
 //    /// If no context is provided, the given closure is executed on `Queue.global`
 //    public func traverse<U, E: ErrorType>(context c: ExecutionContext = Queue.global.context, f: Generator.Element -> Future<U, E>) -> Future<[U], E> {
-//        
-//        
+//
+//
 //        let fs: [Future<U, E>] = map(f)
 //        fs.reduce([U]()) { (acc:[U], alem:Future<U, E>) in
 //            return 0
@@ -183,7 +185,7 @@ public extension SequenceType where Generator.Element: ResultType {
 //}
 //
 ///// Returns a future that succeeds with the value from the first future in the given
-///// sequence that passes the test `p`. 
+///// sequence that passes the test `p`.
 ///// If any of the futures in the given sequence fail, the returned future fails with the
 ///// error of the first failed future in the sequence.
 ///// If no futures in the sequence pass the test, a future with an error with NoSuchElement is returned.
@@ -204,19 +206,19 @@ public extension SequenceType where Generator.Element: ResultType {
 ///// (regardless of whether that future succeeds or fails)
 //public func firstCompletedOf<S: SequenceType, T, E where S.Generator.Element == Future<T, E>>(seq: S) -> Future<T, E> {
 //    let p = Promise<T, E>()
-//    
+//
 //    for fut in seq {
 //        fut.onComplete(context: Queue.global.context) { res in
 //            p.tryComplete(res)
 //            return
 //        }
 //    }
-//    
+//
 //    return p.future
 //}
 //
 ///// Enables the chaining of two failable operations where the second operation is asynchronous and
-///// represented by a future. 
+///// represented by a future.
 ///// Like map, the given closure (that performs the second operation) is only executed
 ///// if the first operation result is a .Success
 ///// If a regular `map` was used, the result would be `Result<Future<U>>`.

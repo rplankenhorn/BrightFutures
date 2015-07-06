@@ -601,8 +601,6 @@ extension BrightFuturesTests {
  */
 extension BrightFuturesTests {
     func testUtilsTraverseSuccess() {
-        XCTFail("does not compile")
-        
         let n = 10
         
         let f = Array(1...n).traverse { i in
@@ -624,76 +622,74 @@ extension BrightFuturesTests {
     }
     
     func testUtilsTraverseEmpty() {
-        XCTFail("does not compile")
+        let e = self.expectation()
+        [Int]().traverse {Future<Int, NoError>.succeeded($0)}.onSuccess { res in
+            XCTAssertEqual(res.count, 0);
+            e.fulfill()
+        }
         
-//        let e = self.expectation()
-//        traverse([Int]()) {Future<Int, NoError>.succeeded($0)}.onSuccess { res in
-//            XCTAssertEqual(res.count, 0);
-//            e.fulfill()
-//        }
-//        
-//        self.waitForExpectationsWithTimeout(2, handler: nil)
+        self.waitForExpectationsWithTimeout(2, handler: nil)
     }
     
     func testUtilsTraverseSingleError() {
-        XCTFail("does not compile")
-//        let e = self.expectation()
-//        
-//        let evenFuture: Int -> Future<Bool, NSError> = { i in
-//            return future {
-//                if i % 2 == 0 {
-//                    return Result(value: true)
-//                } else {
-//                    return Result(error: NSError(domain: "traverse-single-error", code: i, userInfo: nil))
-//                }
-//            }
-//        }
-//        
-//        let f = traverse([2,4,6,8,9,10], context: Queue.global.context, f: evenFuture)
-//            
-//            
-//        f.onFailure { err in
-//            XCTAssertEqual(err.code, 9)
-//            e.fulfill()
-//        }
-//        
-//        self.waitForExpectationsWithTimeout(2, handler: nil)
+        let e = self.expectation()
+        
+        let evenFuture: Int -> Future<Bool, NSError> = { i in
+            return future {
+                if i % 2 == 0 {
+                    return Result(value: true)
+                } else {
+                    return Result(error: NSError(domain: "traverse-single-error", code: i, userInfo: nil))
+                }
+            }
+        }
+        
+        let f = [2,4,6,8,9,10].traverse(context: Queue.global.context, f: evenFuture)
+
+        f.onFailure { err in
+            XCTAssertEqual(err.code, 9)
+            e.fulfill()
+        }
+        
+        self.waitForExpectationsWithTimeout(2, handler: nil)
     }
     
     func testUtilsTraverseMultipleErrors() {
-        XCTFail("does not compile")
-//        let e = self.expectation()
-//        
-//        let evenFuture: Int -> Future<Bool, NSError> = { i in
-//            return future { err in
-//                if i % 2 == 0 {
-//                    return Result(value: true)
-//                } else {
-//                    return Result(error: NSError(domain: "traverse-single-error", code: i, userInfo: nil))
-//                }
-//            }
-//        }
-//        
-//        traverse([20,22,23,26,27,30], f: evenFuture).onFailure { err in
-//            XCTAssertEqual(err.code, 23)
-//            e.fulfill()
-//        }
-//        
-//        self.waitForExpectationsWithTimeout(2, handler: nil)
+        let e = self.expectation()
+        
+        let evenFuture: Int -> Future<Bool, NSError> = { i in
+            return future { err in
+                if i % 2 == 0 {
+                    return Result(value: true)
+                } else {
+                    return Result(error: NSError(domain: "traverse-single-error", code: i, userInfo: nil))
+                }
+            }
+        }
+        
+        let fs = [2,4,6,8,9,10].traverse(evenFuture)
+            
+        fs.onFailure { err in
+            XCTAssertEqual(err.code, 23)
+            e.fulfill()
+        }
+        
+        self.waitForExpectationsWithTimeout(2, handler: nil)
     }
     
     func testUtilsTraverseWithExecutionContext() {
-        XCTFail("does not compile")
-//        let e = self.expectation()
-//        
-//        traverse(Array(1...10), context: Queue.main.context) { _ -> Future<Int, NoError> in
-//            XCTAssert(NSThread.isMainThread())
-//            return Future.succeeded(1)
-//        }.onComplete { _ in
-//            e.fulfill()
-//        }
-//
-//        self.waitForExpectationsWithTimeout(2, handler: nil)
+        let e = self.expectation()
+        
+        let fs = Array(1...10).traverse(context: Queue.main.context) { _ -> Future<Int, NoError> in
+            XCTAssert(NSThread.isMainThread())
+            return Future.succeeded(1)
+        }
+            
+        fs.onComplete { _ in
+            e.fulfill()
+        }
+
+        self.waitForExpectationsWithTimeout(2, handler: nil)
     }
     
     func testUtilsReduce() {
@@ -896,7 +892,7 @@ extension BrightFuturesTests {
             let context = randomContext()
             let e = self.expectationWithDescription("future completes in context \(context)")
             
-            future.onComplete(context: context) { res in
+            future.onComplete(context) { res in
                 e.fulfill()
             }
             
@@ -912,7 +908,7 @@ extension BrightFuturesTests {
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
                 usleep(arc4random_uniform(100))
                 
-                f.onComplete(context: context) { res in
+                f.onComplete(context) { res in
                     e.fulfill()
                 }
             }
@@ -927,7 +923,7 @@ extension BrightFuturesTests {
         var executingCallbacks = 0
         for _ in 0..<10 {
             let e = self.expectation()
-            p.future.onComplete(context: Queue.global.context) { _ in
+            p.future.onComplete(Queue.global.context) { _ in
                 XCTAssert(executingCallbacks == 0, "This should be the only executing callback")
                 
                 executingCallbacks++
@@ -941,7 +937,7 @@ extension BrightFuturesTests {
             }
             
             let e1 = self.expectation()
-            p.future.onComplete(context: Queue.main.context) { _ in
+            p.future.onComplete(Queue.main.context) { _ in
                 XCTAssert(executingCallbacks == 0, "This should be the only executing callback")
                 
                 executingCallbacks++

@@ -143,13 +143,13 @@ public extension DeferredType where Res: ResultType, Res.Error: ErrorType {
     }
     
     public func onSuccess(context c: ExecutionContext = defaultContext(), callback: Res.Value -> ()) -> Self {
-        return onComplete(context: c) { res in
+        return onComplete(c) { res in
             res.analysis(ifSuccess: callback, ifFailure: { _ in })
         }
     }
 
     public func onFailure(context c: ExecutionContext = defaultContext(), callback: Res.Error -> ()) -> Self {
-        return onComplete(context: c) { res in
+        return onComplete(c) { res in
             res.analysis(ifSuccess: { _ in }, ifFailure: callback)
         }
     }
@@ -162,7 +162,7 @@ public extension DeferredType where Res: ResultType, Res.Error: ErrorType {
     func map<U>(context c: ExecutionContext, transform: Res.Value -> U) -> Future<U, Res.Error> {
         let f = Future<U, Res.Error>()
         
-        onComplete(context: c) { res in
+        onComplete(c) { res in
             res.analysis(ifSuccess: { try! f.success(transform($0)) }, ifFailure: { try! f.failure($0) })
         }
         
@@ -180,7 +180,7 @@ public extension DeferredType where Res: ResultType, Res.Error: ErrorType {
     func mapError<E1>(context c: ExecutionContext, transform: Res.Error -> E1) -> Future<Res.Value, E1> {
         let f = Future<Res.Value, E1>()
         
-        onComplete(context: c) { res in
+        onComplete(c) { res in
             res.analysis(ifSuccess: { try! f.success($0) }, ifFailure: { try! f.failure(transform($0)) })
         }
         
@@ -196,7 +196,7 @@ public extension DeferredType where Res: ResultType, Res.Error: ErrorType {
     public func recoverWith<E1: ErrorType>(context c: ExecutionContext = defaultContext(), task: Res.Error -> Future<Res.Value, E1>) -> Future<Res.Value, E1> {
         let f = Future<Res.Value, E1>()
 
-        onComplete(context: c) { result in
+        onComplete(c) { result in
             result.analysis(ifSuccess: { try! f.success($0) }, ifFailure: { f.completeWith(task($0)) })
         }
         
@@ -263,7 +263,7 @@ extension DeferredType where Res: ResultType, Res.Value: ResultType, Res.Error: 
     public func flatten() -> Future<Res.Value.Value, Res.Error> {
         let f = Future<Res.Value.Value, Res.Error>()
         
-        onComplete(context: ImmediateExecutionContext) { res in
+        onComplete(ImmediateExecutionContext) { res in
             res.analysis(ifSuccess: { res in
                 res.analysis(ifSuccess: { try! f.success($0); return }, ifFailure: { err in try! f.failure(err); return })
             }, ifFailure: {
@@ -282,9 +282,9 @@ extension DeferredType where Res: ResultType, Res.Value: DeferredType, Res.Value
     public func flatten() -> Future<Res.Value.Res.Value, Res.Error> {
         let f = Future<Res.Value.Res.Value, Res.Error>()
 
-        onComplete(context: ImmediateExecutionContext) { res in
+        onComplete(ImmediateExecutionContext) { res in
             res.analysis(ifSuccess: { innerFuture -> () in
-                innerFuture.onComplete(context: ImmediateExecutionContext) { (res:Res.Value.Res) in
+                innerFuture.onComplete(ImmediateExecutionContext) { (res:Res.Value.Res) in
                     res.analysis(ifSuccess: { try! f.success($0) }, ifFailure: { err in try! f.failure(err) })
                 }
             }, ifFailure: { try! f.failure($0) })
