@@ -91,6 +91,14 @@ public final class Future<T, E: ErrorType>: Deferred<Result<T, E>> {
     public init(error: E) {
         super.init(result: Result(error: error))
     }
+    
+    public static func success(value: T) -> Future<T, E> {
+        return Future(value: value)
+    }
+    
+    public static func failure(error: E) -> Future<T, E> {
+        return Future(error: error)
+    }
 
 }
 
