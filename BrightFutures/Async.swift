@@ -83,7 +83,6 @@ public class Async<Value>: AsyncType {
         
         return self
     }
-    
 }
 
 extension Async: MutableAsyncType {

@@ -11,8 +11,10 @@
 		E907D1DE1A6AE4A000AB8075 /* Semaphore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E907D1DD1A6AE4A000AB8075 /* Semaphore.swift */; };
 		E90E9D601B1B8A9B00A8F9F3 /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E90E9D5F1B1B8A9B00A8F9F3 /* Result.framework */; };
 		E90E9D621B1B8AA500A8F9F3 /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E90E9D611B1B8AA500A8F9F3 /* Result.framework */; };
+		E918F3051B54E5E400899428 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DD4EF01B4ED6850070C2AF /* Async.swift */; };
 		E9319EA41A397D2C00A0604A /* QueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9319EA31A397D2C00A0604A /* QueueTests.swift */; };
-		E95507001B525D0B00359F73 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DD4EF01B4ED6850070C2AF /* Async.swift */; };
+		E95507031B52750200359F73 /* Mappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95507021B52750200359F73 /* Mappable.swift */; };
+		E95507051B527D0400359F73 /* Async+Mappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95507041B527D0400359F73 /* Async+Mappable.swift */; };
 		E979E5F41975B1AA007FE914 /* FutureUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E979E5F31975B1AA007FE914 /* FutureUtils.swift */; };
 		E992A95F1B501AC800A9FC4F /* Async+ResultType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E992A95E1B501AC800A9FC4F /* Async+ResultType.swift */; };
 		E992A9601B501AC800A9FC4F /* Async+ResultType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E992A95E1B501AC800A9FC4F /* Async+ResultType.swift */; };
@@ -95,6 +97,8 @@
 		E90E9D5F1B1B8A9B00A8F9F3 /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = "Carthage/Checkouts/Result/build/Debug-iphoneos/Result.framework"; sourceTree = "<group>"; };
 		E90E9D611B1B8AA500A8F9F3 /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = Carthage/Checkouts/Result/build/Debug/Result.framework; sourceTree = "<group>"; };
 		E9319EA31A397D2C00A0604A /* QueueTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QueueTests.swift; sourceTree = "<group>"; };
+		E95507021B52750200359F73 /* Mappable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mappable.swift; sourceTree = "<group>"; };
+		E95507041B527D0400359F73 /* Async+Mappable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Async+Mappable.swift"; sourceTree = "<group>"; };
 		E979E5F31975B1AA007FE914 /* FutureUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FutureUtils.swift; sourceTree = "<group>"; };
 		E992A95E1B501AC800A9FC4F /* Async+ResultType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Async+ResultType.swift"; sourceTree = "<group>"; };
 		E9D45B001AF00659000F6CA7 /* BrightFutures.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BrightFutures.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -214,6 +218,8 @@
 				E9DD4EF01B4ED6850070C2AF /* Async.swift */,
 				E992A95E1B501AC800A9FC4F /* Async+ResultType.swift */,
 				E9DF0818194470060083F7F2 /* Supporting Files */,
+				E95507021B52750200359F73 /* Mappable.swift */,
+				E95507041B527D0400359F73 /* Async+Mappable.swift */,
 			);
 			path = BrightFutures;
 			sourceTree = "<group>";
@@ -439,16 +445,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9F496EF1B052F1400F82839 /* Errors.swift in Sources */,
+				E95507051B527D0400359F73 /* Async+Mappable.swift in Sources */,
 				E979E5F41975B1AA007FE914 /* FutureUtils.swift in Sources */,
-				E95507001B525D0B00359F73 /* Async.swift in Sources */,
 				E9DF0836194470190083F7F2 /* Future.swift in Sources */,
 				E9DF0835194470190083F7F2 /* ExecutionContext.swift in Sources */,
 				E9DD4EEF1B4ED51A0070C2AF /* AsyncType.swift in Sources */,
 				E9DF0837194470190083F7F2 /* Promise.swift in Sources */,
+				E95507031B52750200359F73 /* Mappable.swift in Sources */,
 				E9D923AC1A6CE29A00CADD9F /* InvalidationToken.swift in Sources */,
 				E907D1DE1A6AE4A000AB8075 /* Semaphore.swift in Sources */,
 				E992A95F1B501AC800A9FC4F /* Async+ResultType.swift in Sources */,
 				E9DF0838194470190083F7F2 /* Queue.swift in Sources */,
+				E918F3051B54E5E400899428 /* Async.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
