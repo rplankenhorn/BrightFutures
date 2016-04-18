@@ -105,7 +105,7 @@ let f = future { () -> Result<NSDate, ReadmeError> in
 }
 
 f.onSuccess { value in
-    // value will the NSDate from the server
+    // value will be the NSDate from the server
 }
 ```
 
